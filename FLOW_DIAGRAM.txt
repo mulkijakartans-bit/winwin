@@ -1,0 +1,338 @@
+================================================================================
+DIAGRAM FLOW SISTEM RESERVASI MAKE UP ARTIST - WINWIN_MAKEUP
+================================================================================
+
+1. DIAGRAM FLOW REGISTRASI & AUTHENTIKASI
+   =======================================
+
+   [GUEST/ANONIM]
+        |
+        v
+   [Halaman Register]
+        |
+        +---> Pilih Role: Customer
+        |           |
+        |           v
+        |     [Form Register Customer]
+        |           |
+        |           v
+        |     [Verifikasi Email]
+        |           |
+        |           v
+        |     [Login Customer]
+        |           |
+        |           v
+        |     [Dashboard Customer]
+        |
+        +---> Pilih Role: MUA
+                    |
+                    v
+              [Form Register MUA]
+                    |
+                    v
+              [Verifikasi Email]
+                    |
+                    v
+              [Lengkapi Profil MUA]
+                    |
+                    v
+              [Login MUA]
+                    |
+                    v
+              [Dashboard MUA]
+
+   [Admin] -> [Login Admin] -> [Dashboard Admin]
+
+
+2. DIAGRAM FLOW BOOKING (CUSTOMER SIDE)
+   =====================================
+
+   [Dashboard Customer]
+        |
+        v
+   [Browse MUA List]
+        |
+        +---> [Search MUA]
+        +---> [Filter by Rating/Price/Location]
+        |
+        v
+   [Pilih MUA]
+        |
+        v
+   [Lihat Detail MUA]
+        |
+        +---> Portfolio
+        +---> Rating & Reviews
+        +---> Paket Makeup
+        +---> Jadwal Ketersediaan
+        |
+        v
+   [Pilih Paket Makeup]
+        |
+        v
+   [Pilih Tanggal & Waktu]
+        |
+        v
+   [Isi Form Booking]
+        |
+        +---> Event Location
+        +---> Event Type
+        +---> Notes/Catatan Khusus
+        |
+        v
+   [Konfirmasi Booking]
+        |
+        v
+   [Halaman Pembayaran]
+        |
+        +---> Pilih Metode Pembayaran
+        +---> Upload Bukti Transfer
+        |
+        v
+   [Status: PENDING_PAYMENT]
+        |
+        v
+   [Menunggu Verifikasi Pembayaran]
+        |
+        v
+   [Status: PAID] -> [Menunggu Konfirmasi MUA]
+        |
+        v
+   [Status: CONFIRMED] -> [Booking Dikonfirmasi]
+        |
+        v
+   [Status: ON_PROGRESS] -> [MUA Sedang Bekerja]
+        |
+        v
+   [Status: COMPLETED] -> [Selesai]
+        |
+        v
+   [Form Review & Rating]
+        |
+        v
+   [Status: REVIEWED]
+
+
+3. DIAGRAM FLOW BOOKING (MUA SIDE)
+   =================================
+
+   [Dashboard MUA]
+        |
+        v
+   [Daftar Booking Request]
+        |
+        +---> [Pending] -> [Lihat Detail Booking]
+        |                       |
+        |                       v
+        |                   [Terima/Tolak]
+        |                       |
+        |                       +---> [Terima] -> Status: CONFIRMED
+        |                       |
+        |                       +---> [Tolak] -> Status: REJECTED
+        |
+        +---> [Confirmed] -> [Update Status]
+        |                       |
+        |                       v
+        |                   [ON_PROGRESS]
+        |                       |
+        |                       v
+        |                   [COMPLETED]
+        |
+        v
+   [Lihat Review & Rating]
+
+
+4. DIAGRAM FLOW PEMBAYARAN
+   ========================
+
+   [Booking Created]
+        |
+        v
+   [Status: PENDING_PAYMENT]
+        |
+        v
+   [Customer Upload Bukti Transfer]
+        |
+        v
+   [Status: PAID (Pending Verification)]
+        |
+        v
+   [Admin/MUA Verifikasi]
+        |
+        +---> [Verifikasi Berhasil]
+        |           |
+        |           v
+        |       [Status: VERIFIED]
+        |           |
+        |           v
+        |       [Booking Status: CONFIRMED]
+        |
+        +---> [Verifikasi Gagal]
+                    |
+                    v
+                [Status: REJECTED]
+                    |
+                    v
+                [Customer Upload Ulang Bukti]
+
+
+5. DIAGRAM FLOW STATUS BOOKING
+   ============================
+
+   PENDING
+     |
+     v
+   CONFIRMED <---> REJECTED
+     |
+     v
+   ON_PROGRESS
+     |
+     v
+   COMPLETED
+     |
+     v
+   REVIEWED
+
+
+6. DIAGRAM FLOW ADMIN
+   ===================
+
+   [Dashboard Admin]
+        |
+        +---> [User Management]
+        |       |
+        |       +---> [Kelola Customer]
+        |       +---> [Kelola MUA]
+        |       +---> [Verifikasi MUA]
+        |
+        +---> [Booking Management]
+        |       |
+        |       +---> [Lihat Semua Booking]
+        |       +---> [Filter by Status]
+        |       +---> [Detail Booking]
+        |
+        +---> [Payment Management]
+        |       |
+        |       +---> [Verifikasi Pembayaran]
+        |       +---> [Lihat Bukti Transfer]
+        |
+        +---> [Kategori Management]
+        |       |
+        |       +---> [Tambah Kategori]
+        |       +---> [Edit Kategori]
+        |       +---> [Hapus Kategori]
+        |
+        +---> [Laporan & Statistik]
+                |
+                +---> [Laporan Booking]
+                +---> [Laporan Pendapatan]
+                +---> [Statistik MUA]
+                +---> [Statistik Customer]
+
+
+7. DIAGRAM FLOW MUA PROFILE MANAGEMENT
+   ====================================
+
+   [Dashboard MUA]
+        |
+        +---> [Kelola Profil]
+        |       |
+        |       +---> [Edit Bio]
+        |       +---> [Edit Specialization]
+        |       +---> [Edit Experience]
+        |
+        +---> [Kelola Portfolio]
+        |       |
+        |       +---> [Tambah Foto Portfolio]
+        |       +---> [Edit Portfolio]
+        |       +---> [Hapus Portfolio]
+        |
+        +---> [Kelola Paket Makeup]
+        |       |
+        |       +---> [Tambah Paket]
+        |       +---> [Edit Paket]
+        |       +---> [Hapus Paket]
+        |       +---> [Set Harga]
+        |
+        +---> [Kelola Jadwal]
+                |
+                +---> [Set Ketersediaan]
+                +---> [Block Tanggal]
+                +---> [Lihat Kalender]
+
+
+8. USE CASE DIAGRAM (Simplified)
+   ===============================
+
+   CUSTOMER dapat:
+   - Register & Login
+   - Browse & Search MUA
+   - Lihat Detail MUA
+   - Booking Makeup
+   - Upload Bukti Pembayaran
+   - Lihat History Booking
+   - Review & Rating
+   - Edit Profile
+
+   MUA dapat:
+   - Register & Login
+   - Kelola Profil
+   - Kelola Portfolio
+   - Kelola Paket & Harga
+   - Kelola Jadwal
+   - Terima/Tolak Booking
+   - Update Status Booking
+   - Lihat Review
+
+   ADMIN dapat:
+   - Login
+   - Kelola User
+   - Kelola Booking
+   - Verifikasi Pembayaran
+   - Kelola Kategori
+   - Lihat Laporan
+
+
+================================================================================
+SEQUENCE DIAGRAM - PROSES BOOKING
+================================================================================
+
+Customer          MUA              Admin            System
+   |               |                |                 |
+   |--Browse MUA-->|                |                 |
+   |<--MUA List----|                |                 |
+   |               |                |                 |
+   |--Select MUA-->|                |                 |
+   |<--MUA Detail--|                |                 |
+   |               |                |                 |
+   |--Create Booking--------------->|                 |
+   |               |                |                 |
+   |<--Booking Pending-------------|                 |
+   |               |                |                 |
+   |--Upload Payment Proof--------->|                 |
+   |               |                |                 |
+   |               |                |--Verify Payment->|
+   |               |                |<--Payment OK-----|
+   |               |                |                 |
+   |<--Payment Verified------------|                 |
+   |               |                |                 |
+   |               |<--New Booking--|                 |
+   |               |                |                 |
+   |               |--Accept Booking->|                 |
+   |               |                |                 |
+   |<--Booking Confirmed-----------|                 |
+   |               |                |                 |
+   |               |--Update Status->|                 |
+   |               |(ON_PROGRESS)   |                 |
+   |               |                |                 |
+   |               |--Update Status->|                 |
+   |               |(COMPLETED)     |                 |
+   |               |                |                 |
+   |<--Booking Completed-----------|                 |
+   |               |                |                 |
+   |--Submit Review->|                |                 |
+   |               |                |                 |
+   |<--Review Saved-|                |                 |
+
+================================================================================
+

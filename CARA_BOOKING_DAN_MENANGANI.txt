@@ -1,0 +1,204 @@
+================================================================================
+PANDUAN BOOKING DAN MENANGANI BOOKING - WINWIN MAKEUP
+================================================================================
+
+CARA BOOKING (Untuk Customer)
+==============================
+
+1. Register & Login
+   - Buka aplikasi dan klik "Daftar"
+   - Isi form registrasi (Nama, Email, Password, No. Telepon)
+   - Setelah registrasi, otomatis login
+   - Atau login jika sudah punya akun
+
+2. Lihat Paket Makeup
+   - Di halaman Home, scroll ke bagian "Paket Makeup"
+   - Lihat semua paket yang tersedia beserta harga dan detailnya
+   - Pilih paket yang sesuai dengan kebutuhan
+
+3. Buat Booking
+   - Klik tombol "Pesan Sekarang" pada paket yang dipilih
+   - Isi form booking:
+     * Tanggal Booking: Pilih tanggal (minimal besok)
+     * Waktu Booking: Pilih waktu yang diinginkan
+     * Lokasi Acara: Alamat lengkap lokasi acara
+     * Jenis Acara: Contoh: Wedding, Prewedding, dll (opsional)
+     * Catatan Khusus: Catatan tambahan jika ada (opsional)
+   - Klik "Buat Booking"
+   - Booking akan dibuat dengan status PENDING
+
+4. Upload Bukti Pembayaran
+   - Setelah booking dibuat, akan muncul tombol "Upload Bukti Pembayaran"
+   - Klik tombol tersebut
+   - Isi form pembayaran:
+     * Metode Pembayaran: Pilih (Transfer Bank, E-Wallet, Cash, dll)
+     * Bukti Pembayaran: Upload foto bukti transfer/pembayaran
+     * Catatan: Catatan tambahan (opsional)
+   - Klik "Upload Bukti Pembayaran"
+   - Status pembayaran menjadi PENDING (menunggu verifikasi admin)
+
+5. Menunggu Konfirmasi
+   - Admin akan memverifikasi pembayaran
+   - Jika pembayaran VERIFIED, booking status otomatis menjadi CONFIRMED
+   - Jika pembayaran REJECTED, admin akan memberikan alasan, dan customer bisa upload ulang
+
+6. Review Setelah Selesai
+   - Setelah booking status menjadi COMPLETED
+   - Customer bisa memberikan review dan rating
+   - Review akan ditampilkan di profil WINWIN Makeup
+
+
+CARA MENANGANI BOOKING (Untuk Admin)
+=====================================
+
+1. Login sebagai Admin
+   - Login dengan akun admin:
+     Email: admin@winwinmakeup.com
+     Password: admin123 (default dari seeder)
+
+2. Dashboard Admin
+   - Setelah login, akan masuk ke Dashboard Admin
+   - Lihat statistik:
+     * Total Customers
+     * Total Bookings
+     * Pending Bookings
+     * Pending Payments
+
+3. Verifikasi Pembayaran
+   - Klik "Kelola Payments" di dashboard atau menu
+   - Lihat daftar pembayaran yang pending
+   - Klik "Detail" pada pembayaran yang ingin diverifikasi
+   - Lihat bukti pembayaran yang diupload customer
+   - Pilih aksi:
+     * Verifikasi: Jika pembayaran valid
+     * Tolak: Jika pembayaran tidak valid (wajib isi alasan)
+   - Jika di-verifikasi, booking status otomatis menjadi CONFIRMED
+
+4. Kelola Booking
+   - Klik "Kelola Bookings" di dashboard atau menu
+   - Lihat semua booking dengan filter status (Pending, Confirmed, On Progress, Completed)
+   - Klik "Detail" pada booking yang ingin dikelola
+   - Update status booking sesuai progress:
+     * PENDING → CONFIRMED (setelah verifikasi pembayaran)
+     * CONFIRMED → ON_PROGRESS (ketika mulai bekerja)
+     * ON_PROGRESS → COMPLETED (setelah selesai)
+     * PENDING → REJECTED (jika booking ditolak, wajib isi alasan)
+
+5. Flow Status Booking
+   PENDING
+     ↓
+   CONFIRMED (setelah pembayaran verified)
+     ↓
+   ON_PROGRESS (ketika mulai bekerja)
+     ↓
+   COMPLETED (setelah selesai)
+     ↓
+   REVIEWED (customer memberikan review)
+
+   Atau bisa ditolak:
+   PENDING → REJECTED (jika ditolak)
+
+6. Kelola Profil WINWIN Makeup
+   - Klik "Kelola Profil WINWIN Makeup"
+   - Edit informasi:
+     * Nama, Bio, Pengalaman
+     * Spesialisasi
+     * Kontak (Email, Phone, WhatsApp, Instagram, Facebook)
+     * Cover Photo
+   - Klik "Update Profil"
+
+7. Kelola Portfolio
+   - Klik "Kelola Portfolio"
+   - Tambah portfolio baru:
+     * Upload gambar
+     * Isi deskripsi (opsional)
+     * Centang "Featured" jika ingin ditampilkan di homepage
+   - Hapus portfolio yang tidak diperlukan
+
+8. Kelola Paket Makeup
+   - Klik "Kelola Paket"
+   - Tambah paket baru:
+     * Nama Paket
+     * Deskripsi
+     * Harga
+     * Durasi (menit)
+     * Include (apa saja yang termasuk)
+     * Status Aktif/Non-Aktif
+   - Edit paket yang sudah ada (klik tombol "Edit")
+   - Hapus paket yang tidak diperlukan
+
+
+FLOW LENGKAP BOOKING
+=====================
+
+Dari Sisi Customer:
+1. Register/Login → Dashboard Customer
+2. Lihat Home → Lihat paket makeup
+3. Pilih Paket → Klik "Pesan Sekarang"
+4. Isi Form Booking → Submit
+5. Upload Bukti Pembayaran → Submit
+6. Menunggu Verifikasi → Status: PENDING
+7. Pembayaran Verified → Status: CONFIRMED
+8. Menunggu MUA → Status: ON_PROGRESS
+9. Selesai → Status: COMPLETED
+10. Review → Berikan rating dan review
+
+Dari Sisi Admin:
+1. Login Admin → Dashboard Admin
+2. Lihat Pending Payments → Verifikasi pembayaran
+3. Verifikasi Pembayaran → Booking otomatis CONFIRMED
+4. Lihat Bookings → Update status sesuai progress
+5. Update Status → ON_PROGRESS → COMPLETED
+
+
+STATUS BOOKING
+==============
+- PENDING: Booking baru dibuat, menunggu verifikasi pembayaran
+- CONFIRMED: Pembayaran sudah verified, booking dikonfirmasi
+- ON_PROGRESS: MUA sedang bekerja
+- COMPLETED: Pekerjaan selesai
+- REJECTED: Booking ditolak (dengan alasan)
+- CANCELLED: Booking dibatalkan
+
+STATUS PEMBAYARAN
+=================
+- PENDING: Bukti pembayaran sudah diupload, menunggu verifikasi
+- PAID: Pembayaran sudah dilakukan (belum verified)
+- VERIFIED: Pembayaran sudah diverifikasi admin
+- REJECTED: Pembayaran ditolak (dengan alasan)
+
+
+CARA MENJALANKAN SEEDER
+========================
+Setelah setup database, jalankan:
+
+php artisan migrate
+php artisan db:seed
+
+Atau untuk fresh migration + seed:
+
+php artisan migrate:fresh --seed
+
+Ini akan membuat:
+- Admin user (admin@winwinmakeup.com / admin123)
+- Profil WINWIN Makeup
+- 4 sample paket makeup (Basic, Wedding, Prewedding, Event)
+
+
+TIPS PENTING
+============
+
+Untuk Customer:
+- Pastikan upload bukti pembayaran yang jelas dan valid
+- Isi detail booking dengan lengkap (lokasi, waktu, catatan)
+- Cek status booking secara berkala
+- Berikan review setelah selesai untuk membantu MUA
+
+Untuk Admin:
+- Verifikasi pembayaran secepat mungkin
+- Update status booking sesuai progress kerja
+- Komunikasi dengan customer jika ada masalah
+- Kelola profil, portfolio, dan paket secara berkala
+
+================================================================================
+

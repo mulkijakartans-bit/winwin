@@ -1,0 +1,210 @@
+================================================================================
+FLOW SISTEM RESERVASI WINWIN MAKEUP
+================================================================================
+
+KONSEP APLIKASI:
+- Aplikasi ini khusus untuk WINWIN Makeup (satu MUA saja)
+- User hanya bisa daftar sebagai Customer
+- Admin yang mengelola profil WINWIN Makeup, paket, portfolio
+
+1. FLOW REGISTRASI & LOGIN
+   ========================
+   [Guest] 
+   -> Register (hanya sebagai Customer)
+   -> Login
+   -> Dashboard Customer
+
+2. FLOW CUSTOMER
+   ==============
+   [Customer Login]
+   -> Dashboard Customer
+   -> Lihat Home (Profil WINWIN Makeup, Portfolio, Paket)
+   -> Pilih Paket Makeup
+   -> Pilih Tanggal & Waktu
+   -> Isi Detail Acara (Lokasi, Tema, Catatan)
+   -> Konfirmasi Booking
+   -> Pembayaran (Upload Bukti Transfer)
+   -> Menunggu Konfirmasi Admin
+   -> Status Booking (Pending/Confirmed/Rejected)
+   -> Jika Confirmed: Detail Booking & Invoice
+   -> Review & Rating setelah selesai
+
+3. FLOW ADMIN
+   ===========
+   [Admin Login]
+   -> Dashboard Admin
+   -> Kelola Profil WINWIN Makeup
+   -> Kelola Portfolio WINWIN Makeup
+   -> Kelola Paket Makeup
+   -> Kelola Booking (Lihat semua booking, Update status)
+   -> Verifikasi Pembayaran
+   -> Kelola Customers
+   -> Laporan & Statistik
+
+4. FLOW BOOKING DETAIL
+   ====================
+   Booking Status Flow:
+   PENDING -> CONFIRMED -> ON_PROGRESS -> COMPLETED -> REVIEWED
+                    |
+                    v
+                 REJECTED (jika ditolak Admin)
+
+5. FLOW PEMBAYARAN
+   ================
+   [Customer]
+   -> Upload Bukti Transfer
+   -> Admin Verifikasi Pembayaran
+   -> Status: PENDING -> VERIFIED/REJECTED
+   -> Jika VERIFIED: Booking Status -> CONFIRMED
+
+6. ENTITAS UTAMA
+   ==============
+   - User (Customer, Admin)
+   - MUA Profile (hanya satu: WINWIN Makeup)
+   - Paket Makeup (milik WINWIN Makeup)
+   - Booking (Customer booking paket)
+   - Payment (Bukti pembayaran booking)
+   - Review & Rating (Review untuk WINWIN Makeup)
+   - Schedule (Jadwal ketersediaan WINWIN Makeup)
+
+7. FITUR UTAMA
+   ============
+   Customer:
+   - Register & Login
+   - Lihat Profil WINWIN Makeup
+   - Lihat Portfolio
+   - Lihat Paket Makeup
+   - Booking Makeup
+   - Payment (Upload Bukti)
+   - Review & Rating
+   - History Booking
+   - Profile Management
+
+   Admin:
+   - Login
+   - Kelola Profil WINWIN Makeup
+   - Kelola Portfolio
+   - Kelola Paket Makeup
+   - Kelola Booking (Update Status)
+   - Verifikasi Pembayaran
+   - Kelola Customers
+   - Laporan & Statistik
+
+================================================================================
+FLOW DIAGRAM (Text Format)
+================================================================================
+
+REGISTRASI:
+Guest -> Register (Customer) -> Login -> Dashboard Customer
+
+BOOKING PROCESS:
+Customer -> Lihat Home -> Pilih Paket -> Pilih Tanggal/Waktu 
+-> Isi Detail -> Konfirmasi -> Payment (Upload Bukti) -> 
+Admin Verify -> Jika Verified: Booking Confirmed -> 
+Admin Update Status (On Progress) -> Completed -> Review
+
+PAYMENT FLOW:
+Booking Created -> Payment Pending -> Customer Upload Bukti -> 
+Admin Verify -> Payment Verified -> Booking Confirmed
+
+================================================================================
+DATABASE SCHEMA
+================================================================================
+
+users
+- id
+- name
+- email
+- password
+- role (customer, admin)
+- phone
+- address
+- avatar
+- email_verified_at
+- created_at, updated_at
+
+mua_profiles (hanya satu record: WINWIN Makeup)
+- id (selalu 1)
+- name (default: WINWIN Makeup)
+- bio
+- experience_years
+- specialization
+- rating (avg)
+- total_reviews
+- instagram, facebook, whatsapp
+- email, phone
+- cover_photo
+- created_at, updated_at
+
+mua_portfolios
+- id
+- mua_profile_id (selalu 1)
+- image
+- description
+- order
+- is_featured
+- created_at, updated_at
+
+makeup_packages
+- id
+- mua_profile_id (selalu 1)
+- name
+- description
+- price
+- duration (minutes)
+- includes
+- is_active
+- order
+- created_at, updated_at
+
+bookings
+- id
+- booking_code
+- customer_id (FK users)
+- package_id (FK)
+- booking_date
+- booking_time
+- event_location
+- event_type
+- notes
+- total_price
+- status (pending, confirmed, rejected, on_progress, completed, cancelled)
+- rejection_reason
+- confirmed_at, completed_at
+- created_at, updated_at
+
+payments
+- id
+- booking_id (FK)
+- payment_code
+- payment_method
+- amount
+- payment_proof
+- status (pending, paid, verified, rejected)
+- rejection_reason
+- verified_by (FK users)
+- verified_at
+- notes
+- created_at, updated_at
+
+reviews
+- id
+- booking_id (FK)
+- customer_id (FK users)
+- rating (1-5)
+- comment
+- images
+- is_visible
+- created_at, updated_at
+
+schedules
+- id
+- mua_profile_id (selalu 1)
+- date
+- start_time
+- end_time
+- is_available
+- notes
+- created_at, updated_at
+
+================================================================================
