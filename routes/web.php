@@ -19,6 +19,8 @@ use App\Http\Controllers\Admin\AdminController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Public API
+Route::post('/api/xendit/webhook', [App\Http\Controllers\WebhookController::class, 'handle']);
+
 Route::get('/api/package/{id}', function ($id) {    
     $package = \App\MakeupPackage::findOrFail($id);
     return response()->json([

@@ -1439,31 +1439,24 @@
     <div class="modal-content" style="max-width: 600px;">
         <button class="modal-close" onclick="closePaymentModal()">&times;</button>
         <div class="modal-header">
-            <h2 class="modal-title">Upload Bukti Pembayaran</h2>
+            <h2 class="modal-title">Pembayaran</h2>
         </div>
-        <form id="paymentForm" enctype="multipart/form-data">
+        <form id="paymentForm">
             @csrf
             <input type="hidden" id="payment_booking_id" name="booking_id">
             
             <div class="form-group">
-                <label for="payment_method" class="form-label">Metode Pembayaran</label>
-                <select class="form-input" id="payment_method" name="payment_method" required>
-                    <option value="">Pilih...</option>
-                    <option value="bank_transfer">Transfer Bank</option>
-                    <option value="e_wallet">E-Wallet</option>
-                    <option value="cash">Cash</option>
-                    <option value="other">Lainnya</option>
-                </select>
-                <span class="form-error" id="payment_method_error"></span>
+                <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                    Anda akan diarahkan ke halaman pembayaran aman Xendit. 
+                    Silakan selesaikan pembayaran dalam waktu 24 jam.
+                </p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                    <div style="font-size: 0.85rem; color: #999; margin-bottom: 5px;">TOTAL PEMBAYARAN</div>
+                    <div class="payment-amount" style="font-size: 1.5rem; color: #1a1a1a; font-weight: 500;">
+                        <!-- Amount filled by JS -->
+                    </div>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label for="payment_proof" class="form-label">Bukti Pembayaran</label>
-                <input type="file" class="form-input" id="payment_proof" name="payment_proof" accept="image/*" required>
-                <small style="color: #999; margin-top: 8px; display: block;">Format: JPG, PNG, maksimal 2MB</small>
-                <span class="form-error" id="payment_proof_error"></span>
-            </div>
-
             <div class="form-group">
                 <label for="payment_notes" class="form-label">Catatan (Opsional)</label>
                 <textarea class="form-input" id="payment_notes" name="notes" rows="3"></textarea>
@@ -1471,7 +1464,7 @@
             </div>
 
             <div class="modal-actions">
-                <button type="submit" class="btn-modal btn-modal-primary" id="payment_submit_btn">Upload Bukti Pembayaran</button>
+                <button type="submit" class="btn-modal btn-modal-primary" id="payment_submit_btn">Bayar Sekarang</button>
                 <button type="button" class="btn-modal btn-modal-secondary" onclick="closePaymentModal()">Batal</button>
             </div>
         </form>
@@ -2060,7 +2053,7 @@
                 </div>
                 ` : `
                 <div style="border-top: 1px solid #e0e0e0; padding-top: 20px;">
-                    <button type="button" class="btn-modal btn-modal-primary" onclick="openPaymentModal(${booking.id})">Upload Bukti Pembayaran</button>
+                    <button type="button" class="btn-modal btn-modal-primary" onclick="openPaymentModal(${booking.id}, ${booking.total_price})">Bayar Sekarang</button>
                 </div>
                 `}
             </div>
@@ -2116,18 +2109,19 @@
     // Close packages modal when clicking outside
     document.getElementById('packagesModal')?.addEventListener('click', function(e) {
         if (e.target === this) {
-            closePackagesModal();
+    closePackagesModal();
         }
     });
 
     // Payment Modal Functions
-    function openPaymentModal(bookingId) {
+    function openPaymentModal(bookingId, amount) {
         document.getElementById('payment_booking_id').value = bookingId;
+        document.querySelector('.payment-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
+        document.getElementById('bookingDetailModal').classList.remove('show');
         document.getElementById('paymentModal').classList.add('show');
         document.body.style.overflow = 'hidden';
         // Reset form
         document.getElementById('paymentForm').reset();
-        document.getElementById('payment_booking_id').value = bookingId;
         // Clear errors
         document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
     }
@@ -2140,54 +2134,44 @@
     }
 
     // Handle payment form submit
-    document.getElementById('paymentForm')?.addEventListener('submit', function(e) {
+    document.getElementById('paymentForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
         const bookingId = document.getElementById('payment_booking_id').value;
         const submitBtn = document.getElementById('payment_submit_btn');
-        const originalText = submitBtn.textContent;
-        
-        // Clear previous errors
-        document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
         
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Mengupload...';
-        
-        fetch(`/payment/${bookingId}`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closePaymentModal();
-                // Reload page to show updated booking
-                location.reload();
-            } else {
-                // Show errors
-                if (data.errors) {
-                    Object.keys(data.errors).forEach(key => {
-                        const errorEl = document.getElementById(key + '_error');
-                        if (errorEl) {
-                            errorEl.textContent = data.errors[key][0];
-                        }
-                    });
+        submitBtn.textContent = 'Memproses...';
+
+        const formData = new FormData(this);
+
+        try {
+            const response = await fetch(`/payment/${bookingId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Redirect to invoice URL
+                window.location.href = data.invoice_url;
+            } else {
+                alert(data.message || 'Terjadi kesalahan saat membuat pembayaran');
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                submitBtn.textContent = 'Bayar Sekarang';
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengupload bukti pembayaran.');
+            alert('Terjadi kesalahan sistem');
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        });
+            submitBtn.textContent = 'Bayar Sekarang';
+        }
     });
 
     // Close payment modal when clicking outside

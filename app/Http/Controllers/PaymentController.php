@@ -6,39 +6,19 @@ use App\Payment;
 use App\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Xendit\Xendit;
+use Xendit\Invoice;
 
 class PaymentController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     */
     public function __construct()
     {
         $this->middleware('auth');
     }
 
     /**
-     * Show the form for creating a payment.
-     */
-    public function create($bookingId)
-    {
-        $booking = Booking::with(['package', 'payment'])->findOrFail($bookingId);
-
-        // Check authorization
-        if (Auth::user()->isCustomer() && $booking->customer_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if ($booking->payment) {
-            return redirect()->route('payment.show', $booking->payment->id);
-        }
-
-        return view('payment.create', compact('booking'));
-    }
-
-    /**
-     * Store a newly created payment.
+     * Calculate and create payment invoice via Xendit
      */
     public function store(Request $request, $bookingId)
     {
@@ -49,54 +29,88 @@ class PaymentController extends Controller
             abort(403);
         }
 
+        // Validate basic input if any notes
+        $request->validate([
+            'notes' => 'nullable|string|max:500',
+        ]);
+
         try {
-            $validated = $request->validate([
-                'payment_method' => 'required|in:bank_transfer,cash,e_wallet,other',
-                'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-                'notes' => 'nullable|string|max:500',
+            // Setup Xendit API Key (V2 Style)
+            $apiKey = config('services.xendit.secret_key');
+            if (empty($apiKey)) {
+                 // Fallback to env if config is empty for some reason
+                 $apiKey = env('XENDIT_API_KEY');
+            }
+            
+            Xendit::setApiKey($apiKey);
+
+            // Generate External ID
+            $externalId = 'INV-' . time() . '-' . $booking->id;
+            
+            // Create Invoice using V2 static method
+            $params = [
+                'external_id' => $externalId,
+                'amount' => $booking->total_price,
+                'description' => 'Payment for Booking #' . $booking->booking_code . ' via WINWIN Makeup',
+                'invoice_duration' => 3600, // 1 hour
+                'payer_email' => Auth::user()->email,
+                'customer' => [
+                    'given_names' => Auth::user()->name,
+                    'email' => Auth::user()->email,
+                    'mobile_number' => Auth::user()->phone ?? null,
+                ],
+                'currency' => 'IDR',
+                'success_redirect_url' => route('dashboard'),
+                'failure_redirect_url' => route('dashboard'),
+                'items' => [
+                    [
+                        'name' => $booking->package->name,
+                        'quantity' => 1,
+                        'price' => $booking->total_price,
+                        'category' => 'Makeup Service'
+                    ]
+                ]
+            ];
+
+            $invoice = \Xendit\Invoice::create($params);
+            
+            // Save Payment as Pending with Invoice URL
+            // V2 returns an array
+            $invoiceUrl = $invoice['invoice_url'];
+            
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'payment_code' => $externalId,
+                'payment_method' => 'xendit_invoice',
+                'amount' => $booking->total_price,
+                'status' => 'pending',
+                'external_id' => $externalId,
+                'checkout_link' => $invoiceUrl,
+                'notes' => $request->notes,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Invoice berhasil dibuat.',
+                    'invoice_url' => $invoiceUrl
+                ]);
+            }
+
+            return redirect($invoiceUrl);
+
+        } catch (\Exception $e) {
+            Log::error('Xendit Error: ' . $e->getMessage());
+            
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'errors' => $e->errors()
-                ], 422);
+                    'message' => 'Gagal membuat invoice pembayaran: ' . $e->getMessage()
+                ], 500);
             }
-            throw $e;
+            
+            return back()->with('error', 'Gagal membuat invoice pembayaran: ' . $e->getMessage());
         }
-
-        // Upload payment proof to public/storage
-        $file = $request->file('payment_proof');
-        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $directory = public_path('storage/payment_proofs');
-        
-        // Create directory if not exists
-        if (!file_exists($directory)) {
-            mkdir($directory, 0755, true);
-        }
-        
-        $file->move($directory, $fileName);
-        $proofPath = 'payment_proofs/' . $fileName;
-
-        $payment = Payment::create([
-            'booking_id' => $booking->id,
-            'payment_method' => $validated['payment_method'],
-            'amount' => $booking->total_price,
-            'payment_proof' => $proofPath,
-            'status' => 'pending',
-            'notes' => $validated['notes'],
-        ]);
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Bukti pembayaran berhasil diupload. Menunggu verifikasi.',
-                'payment' => $payment->load('booking')
-            ]);
-        }
-
-        return redirect()->route('payment.show', $payment->id)
-            ->with('success', 'Bukti pembayaran berhasil diupload. Menunggu verifikasi.');
     }
 
     /**
@@ -104,21 +118,16 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
-        $payment = Payment::with(['booking.customer', 'booking.package', 'verifier'])
+        $payment = Payment::with(['booking.customer', 'booking.package'])
             ->findOrFail($id);
 
-        // Check authorization
-        $booking = $payment->booking;
-        if (Auth::user()->isCustomer() && $booking->customer_id !== Auth::id()) {
+        if (Auth::user()->isCustomer() && $payment->booking->customer_id !== Auth::id()) {
             abort(403);
         }
 
         return view('payment.show', compact('payment'));
     }
 
-    /**
-     * Verify payment (Admin only).
-     */
     public function verify(Request $request, $id)
     {
         if (!Auth::user()->isAdmin()) {
@@ -126,7 +135,7 @@ class PaymentController extends Controller
         }
 
         $payment = Payment::with('booking')->findOrFail($id);
-
+        
         $validated = $request->validate([
             'status' => 'required|in:verified,rejected',
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:500',
@@ -144,16 +153,14 @@ class PaymentController extends Controller
 
         $payment->update($updateData);
 
-        // Update booking status if payment verified
         if ($validated['status'] === 'verified') {
             $payment->booking->update(['status' => 'confirmed', 'confirmed_at' => now()]);
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Status pembayaran berhasil diupdate.']);
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
         }
         
-        return redirect()->route('payment.show', $payment->id)
-            ->with('success', 'Status pembayaran berhasil diupdate.');
+        return back()->with('success', 'Status updated.');
     }
 }
