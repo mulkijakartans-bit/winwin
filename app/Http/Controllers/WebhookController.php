@@ -51,14 +51,13 @@ class WebhookController extends Controller
                 $payment->booking->confirmed_at = Carbon::now();
                 $payment->booking->save();
             } else if ($status == 'EXPIRED') {
-                $payment->status = 'rejected'; // Or keep as expired if we add that enum/string
-                // If expired, maybe cancel booking if not paid?
-                // For now let's set to rejected or cancelled to be safe
+                $payment->status = 'expired'; 
                 $payment->save();
                 
-                // Optional: Cancel booking if expired
-                // $payment->booking->status = 'cancelled';
-                // $payment->booking->save();
+                // Cancel booking if expired
+                $payment->booking->status = 'cancelled';
+                $payment->booking->rejection_reason = 'Pembayaran kadaluarsa (otomatis)';
+                $payment->booking->save();
             } else {
                 $payment->save();
             }

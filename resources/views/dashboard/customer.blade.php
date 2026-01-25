@@ -1448,7 +1448,7 @@
             <div class="form-group">
                 <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
                     Anda akan diarahkan ke halaman pembayaran aman Xendit. 
-                    Silakan selesaikan pembayaran dalam waktu 24 jam.
+                    Silakan selesaikan pembayaran dalam waktu 1 jam.
                 </p>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #e0e0e0;">
                     <div style="font-size: 0.85rem; color: #999; margin-bottom: 5px;">TOTAL PEMBAYARAN</div>
