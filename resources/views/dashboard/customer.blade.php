@@ -997,7 +997,7 @@
 
     .package-modal-description {
         font-size: 0.95rem;
-        color: #666;
+        color: #333;
         line-height: 1.6;
         margin-bottom: 15px;
     }
@@ -1014,8 +1014,8 @@
 
     .package-detail-label {
         font-size: 0.85rem;
-        font-weight: 500;
-        color: #999;
+        font-weight: 600;
+        color: #333;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         min-width: 80px;
@@ -1033,8 +1033,8 @@
 
     .package-includes-label {
         font-size: 0.85rem;
-        font-weight: 500;
-        color: #999;
+        font-weight: 600;
+        color: #333;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 10px;
@@ -1042,7 +1042,7 @@
 
     .package-includes-content {
         font-size: 0.9rem;
-        color: #666;
+        color: #222;
         line-height: 1.8;
         white-space: pre-line;
     }
@@ -1117,20 +1117,7 @@
             @endif
 </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Pending</div>
-                <div class="stat-value warning">{{ $pendingBookings }}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Confirmed</div>
-                <div class="stat-value info">{{ $confirmedBookings }}</div>
-        </div>
-            <div class="stat-card">
-                <div class="stat-label">Completed</div>
-                <div class="stat-value success">{{ $completedBookings }}</div>
-            </div>
-        </div>
+
 
         <div class="section">
             <div class="section-header">
@@ -1215,6 +1202,22 @@
                         <p>Belum ada booking.</p>
                     </div>
                 @endforelse
+            </div>
+        </div>
+
+
+        <div class="stats-grid" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 30px;">
+            <div class="stat-card">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value warning">{{ $pendingBookings }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Confirmed</div>
+                <div class="stat-value info">{{ $confirmedBookings }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value success">{{ $completedBookings }}</div>
             </div>
         </div>
     </div>
@@ -1367,21 +1370,7 @@
                 @enderror
             </div>
 
-            <div class="form-group">
-                <label for="event_type" class="form-label">Jenis Acara</label>
-                <select class="form-input @error('event_type') is-invalid @enderror" id="event_type" name="event_type" required>
-                    <option value="">Pilih Jenis Acara</option>
-                    <option value="wedding" {{ old('event_type') == 'wedding' ? 'selected' : '' }}>Wedding</option>
-                    <option value="khitan" {{ old('event_type') == 'khitan' ? 'selected' : '' }}>Khitan</option>
-                    <option value="engagement" {{ old('event_type') == 'engagement' ? 'selected' : '' }}>Engagement</option>
-                    <option value="wisuda" {{ old('event_type') == 'wisuda' ? 'selected' : '' }}>Wisuda</option>
-                    <option value="event" {{ old('event_type') == 'event' ? 'selected' : '' }}>Event</option>
-                    <option value="lainnya" {{ old('event_type') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                </select>
-                @error('event_type')
-                    <span class="form-error">{{ $message }}</span>
-                @enderror
-            </div>
+
 
             <div class="form-group">
                 <label for="custom_addon_id" class="form-label">Add On</label>
@@ -1489,7 +1478,7 @@
                 @if($package->images && count($package->images) > 0)
                 <div class="package-modal-images">
                     @foreach($package->images as $image)
-                        <img src="{{ asset('storage/' . $image) }}" alt="{{ $package->name }}" class="package-modal-image">
+                        <img src="{{ asset('storage/' . $image) }}" alt="{{ $package->name }}" class="package-modal-image" onclick="openImagePreview('{{ asset('storage/' . $image) }}')" style="cursor: pointer;">
                     @endforeach
                 </div>
                 @endif
@@ -1514,6 +1503,20 @@
     </div>
 </div>
 @endif
+
+<!-- Image Preview Modal -->
+<div id="imagePreviewModal" class="modal" style="z-index: 10000; background: rgba(0,0,0,0.9);">
+    <span class="modal-close" onclick="closeImagePreview()" style="color: white; font-size: 3rem; position: absolute; top: 20px; right: 30px;">&times;</span>
+    <img class="modal-content" id="previewImage" style="margin: auto; display: block; width: 80%; max-width: 800px; max-height: 80vh; object-fit: contain; animation-name: zoom; animation-duration: 0.6s;">
+    <div id="caption" style="margin: auto; display: block; width: 80%; max-width: 700px; text-align: center; color: #ccc; padding: 10px 0; height: 150px;"></div>
+</div>
+
+<style>
+@keyframes zoom {
+  from {transform:scale(0)}
+  to {transform:scale(1)}
+}
+</style>
 @endsection
 
 @push('scripts')
@@ -1825,6 +1828,30 @@
         document.getElementById('packagesModal').classList.remove('show');
         document.body.style.overflow = 'auto';
     }
+
+    function openImagePreview(src) {
+        var modal = document.getElementById("imagePreviewModal");
+        var modalImg = document.getElementById("previewImage");
+        modal.style.display = "block";
+        // setTimeout to allow transition if needed, but display block is immediate
+        // Add class 'show' if your modal CSS uses it for transitions
+        modal.classList.add('show');
+        modalImg.src = src;
+    }
+
+    function closeImagePreview() {
+        var modal = document.getElementById("imagePreviewModal");
+        modal.style.display = "none";
+        modal.classList.remove('show');
+    }
+
+    // Close on click outside image
+    window.addEventListener('click', function(event) {
+        var modal = document.getElementById("imagePreviewModal");
+        if (event.target == modal) {
+            closeImagePreview();
+        }
+    });
 
     async function updatePackage() {
         const select = document.getElementById('package_select');

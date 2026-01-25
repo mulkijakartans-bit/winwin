@@ -137,7 +137,7 @@ class PaymentController extends Controller
         $payment = Payment::with('booking')->findOrFail($id);
         
         $validated = $request->validate([
-            'status' => 'required|in:verified,rejected',
+            'status' => 'required|in:verified,paid,rejected',
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:500',
         ]);
 
@@ -153,7 +153,7 @@ class PaymentController extends Controller
 
         $payment->update($updateData);
 
-        if ($validated['status'] === 'verified') {
+        if ($validated['status'] === 'verified' || $validated['status'] === 'paid') {
             $payment->booking->update(['status' => 'confirmed', 'confirmed_at' => now()]);
         }
 

@@ -80,9 +80,25 @@ class DashboardController extends Controller
         $portfolios = $muaProfile->portfolios()->orderBy('order')->get();
         $packages = $muaProfile->packages()->orderBy('order')->get();
         $addOns = \App\AddOn::orderBy('name')->get();
+        
+        
+        // Data for Report Tab: Completed or Confirmed bookings (Assuming paid)
+        $query = \App\Booking::whereHas('payment', function($q) {
+            $q->whereIn('status', ['paid', 'verified']);
+        });
+
+        // Date Filter
+        if (request('start_date')) {
+            $query->whereDate('confirmed_at', '>=', request('start_date'));
+        }
+        if (request('end_date')) {
+            $query->whereDate('confirmed_at', '<=', request('end_date'));
+        }
+
+        $paidBookings = $query->with(['customer', 'package', 'payment'])->orderBy('confirmed_at', 'desc')->get();
 
         $activeTab = request('tab', 'customers');
         
-        return view('dashboard.admin', compact('totalUsers', 'totalCustomers', 'totalBookings', 'pendingBookings', 'pendingPayments', 'users', 'bookings', 'payments', 'muaProfile', 'portfolios', 'packages', 'addOns', 'activeTab'));
+        return view('dashboard.admin', compact('totalUsers', 'totalCustomers', 'totalBookings', 'pendingBookings', 'pendingPayments', 'users', 'bookings', 'payments', 'muaProfile', 'portfolios', 'packages', 'addOns', 'paidBookings', 'activeTab'));
     }
 }

@@ -805,6 +805,31 @@
             gap: 10px;
         }
     }
+
+    .notification-badge {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        background-color: #ef4444;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        line-height: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .notification-badge {
+            top: 5px;
+            right: 5px;
+        }
+    }
 </style>
 @endpush
 
@@ -848,7 +873,12 @@
                     <button class="tab-button active" data-tab="customers">Kelola Customers</button>
                 </li>
                 <li class="tab-item">
-                    <button class="tab-button" data-tab="bookings">Kelola Bookings</button>
+                    <button class="tab-button" data-tab="bookings" style="position: relative;">
+                        Kelola Bookings
+                        @if($pendingBookings > 0)
+                            <span class="notification-badge">{{ $pendingBookings }}</span>
+                        @endif
+                    </button>
                 </li>
                 <li class="tab-item">
                     <button class="tab-button" data-tab="payments">Kelola Payments</button>
@@ -864,6 +894,9 @@
                 </li>
                 <li class="tab-item">
                     <button class="tab-button" data-tab="addons">Global Add-Ons</button>
+                </li>
+                <li class="tab-item">
+                    <button class="tab-button" data-tab="reports">Laporan</button>
                 </li>
             </ul>
 
@@ -901,9 +934,37 @@
             <div id="tab-addons" class="tab-content">
                 @include('dashboard.admin.tabs.addons', ['addOns' => $addOns])
             </div>
+            
+            <!-- Reports Tab -->
+            <div id="tab-reports" class="tab-content">
+                @include('dashboard.admin.tabs.reports', ['paidBookings' => $paidBookings])
+            </div>
         </div>
     </div>
 </div>
+
+<!-- New Order Notification Modal -->
+@if($pendingBookings > 0)
+<div id="newOrderModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center; border-radius: 10px;">
+        <button class="modal-close" onclick="closeNewOrderModal()">&times;</button>
+        <div style="margin-bottom: 20px;">
+            <div style="width: 60px; height: 60px; background: #e0f2fe; color: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 500; margin-bottom: 10px; color: #1a1a1a;">Pesanan Baru!</h2>
+            <p style="color: #666; margin-bottom: 0;">Ada <span style="font-weight: 600; color: #ef4444;">{{ $pendingBookings }} pesanan baru</span> yang perlu diproses.</p>
+        </div>
+        <div class="modal-actions" style="justify-content: center; border-top: none; margin-top: 0; padding-top: 0;">
+            <button onclick="viewNewOrders()" class="btn-modal btn-modal-primary" style="width: 100%;">Lihat Pesanan</button>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- Booking Detail Modal -->
 <div id="bookingDetailModal" class="modal">
@@ -976,11 +1037,44 @@
             const response = await fetch('/api/admin/bookings-by-date');
             const data = await response.json();
             adminBookingsByDate = data.bookings || {};
-            renderAdminCalendar();
+            // Only render if element exists
+            if(document.getElementById('admin-calendar-picker')) {
+                renderAdminCalendar();
+            }
         } catch (error) {
             console.error('Error loading admin bookings:', error);
         }
     }
+
+    // New Order Popup Logic
+    @if($pendingBookings > 0)
+    function openNewOrderModal() {
+        document.getElementById('newOrderModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeNewOrderModal() {
+        document.getElementById('newOrderModal').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function viewNewOrders() {
+        closeNewOrderModal();
+        switchTab('bookings');
+        // Scroll to bookings section if needed or just switch tab
+    }
+
+    // Check session storage on load
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!sessionStorage.getItem('newOrderSeen')) {
+            // Delay slightly for effect
+            setTimeout(() => {
+                openNewOrderModal();
+                sessionStorage.setItem('newOrderSeen', 'true');
+            }, 500);
+        }
+    });
+    @endif
 
     // Render Admin Calendar
     function renderAdminCalendar() {
