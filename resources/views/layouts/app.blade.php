@@ -115,18 +115,19 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand" href="{{ auth()->check() ? route('dashboard') : route('home') }}">WINWIN Makeup</a>
+            <a class="navbar-brand" href="{{ route('home') }}">WINWIN Makeup</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    @guest
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('home') }}">Beranda</a>
                     </li>
-                    @endguest
                     @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
+                    </li>
                     @endauth
                 </ul>
                 <ul class="navbar-nav">

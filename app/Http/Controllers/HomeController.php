@@ -12,10 +12,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        // Redirect to dashboard if user is logged in
-        if (auth()->check()) {
-            return redirect()->route('dashboard');
-        }
+
 
         $muaProfile = MuaProfile::getWinwinProfile();
         

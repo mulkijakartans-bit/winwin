@@ -1152,7 +1152,7 @@
 
         <div class="section">
             <div class="section-header">
-                <h2 class="section-title">Semua Booking</h2>
+                <h2 class="section-title">Daftar Booking Saya</h2>
             </div>
             <div class="bookings-list">
                 @forelse($bookings as $booking)

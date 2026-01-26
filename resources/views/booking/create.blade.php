@@ -57,21 +57,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label for="event_type" class="form-label">Jenis Acara</label>
-                        <select class="form-control @error('event_type') is-invalid @enderror" id="event_type" name="event_type" required>
-                            <option value="">Pilih Jenis Acara</option>
-                            <option value="wedding" {{ old('event_type') == 'wedding' ? 'selected' : '' }}>Wedding</option>
-                            <option value="khitan" {{ old('event_type') == 'khitan' ? 'selected' : '' }}>Khitan</option>
-                            <option value="engagement" {{ old('event_type') == 'engagement' ? 'selected' : '' }}>Engagement</option>
-                            <option value="wisuda" {{ old('event_type') == 'wisuda' ? 'selected' : '' }}>Wisuda</option>
-                            <option value="event" {{ old('event_type') == 'event' ? 'selected' : '' }}>Event</option>
-                            <option value="lainnya" {{ old('event_type') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                        </select>
-                        @error('event_type')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+
 
                     <div class="mb-3">
                         <label for="notes" class="form-label">Catatan Khusus</label>
