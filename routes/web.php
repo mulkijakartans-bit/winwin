@@ -183,6 +183,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/create/{bookingId}', [PaymentController::class, 'create'])->name('payment.create');
     Route::post('/payment/{bookingId}', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('/payment/{id}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::get('/payment/{id}/print', [PaymentController::class, 'print'])->name('payment.print');
     Route::post('/payment/{id}/verify', [PaymentController::class, 'verify'])->name('payment.verify');
 });
 

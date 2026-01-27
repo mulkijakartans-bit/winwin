@@ -1707,6 +1707,15 @@
             }, 100);
         }
 
+        // Add Print Button
+        html += `
+            <div style="border-top: 1px solid #e0e0e0; padding-top: 20px; margin-top: 20px; text-align: right;">
+                <a href="/payment/${paymentId}/print" target="_blank" class="btn-modal" style="text-decoration: none; background-color: #0d47a1; color: white; border-color: #0d47a1;">
+                    <i class="fas fa-print"></i> Cetak Invoice
+                </a>
+            </div>
+        `;
+
         html += '</div>';
         content.innerHTML = html;
     }

@@ -128,6 +128,21 @@ class PaymentController extends Controller
         return view('payment.show', compact('payment'));
     }
 
+    /**
+     * Display a print-friendly view of the payment.
+     */
+    public function print($id)
+    {
+        $payment = Payment::with(['booking.customer', 'booking.package'])
+            ->findOrFail($id);
+
+        if (Auth::user()->isCustomer() && $payment->booking->customer_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('payment.print', compact('payment'));
+    }
+
     public function verify(Request $request, $id)
     {
         if (!Auth::user()->isAdmin()) {
