@@ -837,6 +837,25 @@
 <div class="dashboard-page">
     <div class="dashboard-background"></div>
     <div class="container">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0; margin-bottom: 40px; border: none; background: #ffffff; color: #10b981; font-size: 1.25rem; font-weight: 600; text-align: center; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border-top: 5px solid #10b981;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-check-circle-fill me-3" style="font-size: 1.5rem;"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="top: 50%; transform: translateY(-50%); right: 20px;"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 0; margin-bottom: 40px; border: none; background: #ffffff; color: #ef4444; font-size: 1.25rem; font-weight: 600; text-align: center; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border-top: 5px solid #ef4444;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-exclamation-circle-fill me-3" style="font-size: 1.5rem;"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="top: 50%; transform: translateY(-50%); right: 20px;"></button>
+            </div>
+        @endif
         <div class="dashboard-header">
             <h1 class="dashboard-title">Dashboard Admin</h1>
             <p class="dashboard-subtitle">Selamat datang, {{ Auth::user()->name }}</p>

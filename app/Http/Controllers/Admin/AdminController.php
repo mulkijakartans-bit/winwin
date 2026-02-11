@@ -52,6 +52,19 @@ class AdminController extends Controller
     }
 
     /**
+     * Delete customer.
+     */
+    public function deleteUser($id)
+    {
+        $user = User::where('role', 'customer')->findOrFail($id);
+        
+        // Deletion will cascade to bookings and reviews due to DB constraints
+        $user->delete();
+
+        return redirect()->route('admin.users')->with('success', 'Customer berhasil dihapus.');
+    }
+
+    /**
      * Show bookings management.
      */
     public function bookings(Request $request)
@@ -353,10 +366,10 @@ class AdminController extends Controller
         MakeupPackage::create($validated);
 
         if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Paket berhasil ditambahkan.', 'tab' => 'packages']);
+            return response()->json(['success' => true, 'message' => 'Paket layanan baru telah di buat!', 'tab' => 'packages']);
         }
 
-        return redirect()->route('dashboard', ['tab' => 'packages'])->with('success', 'Paket berhasil ditambahkan.');
+        return redirect()->route('dashboard', ['tab' => 'packages'])->with('success', 'Paket layanan baru telah di buat!');
     }
 
     /**
@@ -399,10 +412,10 @@ class AdminController extends Controller
         $package->update($validated);
 
         if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Paket berhasil diupdate.', 'tab' => 'packages']);
+            return response()->json(['success' => true, 'message' => 'Paket layanan berhasil diperbarui!', 'tab' => 'packages']);
         }
 
-        return redirect()->route('dashboard', ['tab' => 'packages'])->with('success', 'Paket berhasil diupdate.');
+        return redirect()->route('dashboard', ['tab' => 'packages'])->with('success', 'Paket layanan berhasil diperbarui!');
     }
 
     /**

@@ -1,7 +1,7 @@
 <div class="card" id="printable-report" style="background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 20px;">
     
     <div class="no-print" style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
-        <form action="{{ route('dashboard') }}" method="GET" style="display: flex; gap: 10px; align-items: flex-end;">
+        <form action="{{ route('dashboard') }}" method="GET" style="display: flex; gap: 10px; align-items: flex-end;" onsubmit="return validateReportDates()">
             <input type="hidden" name="tab" value="reports">
             
             <div style="flex: 1; max-width: 200px;">
@@ -18,6 +18,20 @@
             <a href="{{ route('dashboard', ['tab' => 'reports']) }}" class="btn-action" style="text-align: center;">Reset</a>
         </form>
     </div>
+
+    <script>
+    function validateReportDates() {
+        const start = document.getElementById('start_date').value;
+        const end = document.getElementById('end_date').value;
+        const today = new Date().toISOString().split('T')[0];
+        
+        if ((start && end && start > end) || (start && start > today) || (end && end > today)) {
+            alert('filter tanggal tidak valid!');
+            return false;
+        }
+        return true;
+    }
+    </script>
 
     <div class="report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 500;">

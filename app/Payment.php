@@ -10,7 +10,7 @@ class Payment extends Model
     protected $fillable = [
         'booking_id', 'payment_code', 'payment_method', 'amount',
         'payment_proof', 'status', 'rejection_reason', 'verified_by',
-        'verified_at', 'notes',
+        'verified_at', 'notes', 'external_id', 'checkout_link',
     ];
 
     protected $casts = [

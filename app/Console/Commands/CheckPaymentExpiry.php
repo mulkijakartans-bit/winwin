@@ -21,7 +21,7 @@ class CheckPaymentExpiry extends Command
      *
      * @var string
      */
-    protected $description = 'Check for pending payments that have exceeded the 1 hour limit and cancel them';
+    protected $description = 'Check for pending bookings that have exceeded the 15 minute limit and cancel them';
 
     /**
      * Create a new command instance.
@@ -40,41 +40,38 @@ class CheckPaymentExpiry extends Command
      */
     public function handle()
     {
-        $this->info('Checking for expired payments...');
+        // Find pending bookings created more than 15 minutes ago
+        $expiryTime = Carbon::now()->subMinutes(15);
 
-        // Find pending payments created more than 65 minutes ago (1 hour + 5 mins buffer)
-        // We use created_at of the Payment record
-        $expiryTime = Carbon::now()->subMinutes(65);
-
-        $expiredPayments = Payment::where('status', 'pending')
+        $expiredBookings = \App\Booking::where('status', 'pending')
             ->where('created_at', '<', $expiryTime)
-            ->with('booking')
+            ->with('payment')
             ->get();
 
         $count = 0;
 
-        foreach ($expiredPayments as $payment) {
+        foreach ($expiredBookings as $booking) {
             try {
-                // Mark payment as expired
-                $payment->status = 'expired';
-                $payment->save();
-
-                // Cancel booking
-                if ($payment->booking && $payment->booking->status === 'pending') {
-                    $payment->booking->status = 'cancelled';
-                    $payment->booking->rejection_reason = 'Pembayaran kadaluarsa (by system)';
-                    $payment->booking->save();
-                    
-                    $this->info("Expired payment ID: {$payment->id}, Booking: {$payment->booking->booking_code}");
-                    $count++;
+                // If there is an associated pending payment, mark it as expired
+                if ($booking->payment && $booking->payment->status === 'pending') {
+                    $booking->payment->status = 'expired';
+                    $booking->payment->save();
                 }
+
+                // Cancel the booking
+                $booking->status = 'cancelled';
+                $booking->rejection_reason = 'Booking hangus otomatis karena pembayaran tidak diselesaikan dalam 15 menit.';
+                $booking->save();
+                
+                $this->info("Cancelled expired booking: {$booking->booking_code}");
+                $count++;
             } catch (\Exception $e) {
-                Log::error("Failed to expire payment {$payment->id}: " . $e->getMessage());
-                $this->error("Error processing payment {$payment->id}");
+                Log::error("Failed to reject booking {$booking->id}: " . $e->getMessage());
+                $this->error("Error processing booking {$booking->id}");
             }
         }
 
-        $this->info("Processed {$count} expired payments.");
+        $this->info("Processed {$count} cancelled bookings.");
         return 0;
     }
 }

@@ -74,11 +74,15 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group">
                     <label for="add_price" class="form-label">Harga</label>
-                    <input type="number" class="form-input" id="add_price" name="price" min="0" required>
+                    <input type="number" class="form-input" id="add_price" name="price" min="0" required 
+                           oninvalid="this.setCustomValidity('tentukan harga!')" 
+                           oninput="this.setCustomValidity('')">
                 </div>
                 <div class="form-group">
                     <label for="add_duration" class="form-label">Durasi (menit)</label>
-                    <input type="number" class="form-input" id="add_duration" name="duration" min="1" required>
+                    <input type="number" class="form-input" id="add_duration" name="duration" min="1" required 
+                           oninvalid="this.setCustomValidity('tentukan durasi!')" 
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             <div class="form-group">
@@ -179,11 +183,15 @@ async function openEditPackageModal(packageId, buttonElement) {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group">
                     <label class="form-label">Harga</label>
-                    <input type="number" class="form-input" name="price" value="${packageData.price || 0}" min="0" required>
+                    <input type="number" class="form-input" name="price" value="${packageData.price || 0}" min="0" required 
+                           oninvalid="this.setCustomValidity('tentukan harga!')" 
+                           oninput="this.setCustomValidity('')">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Durasi (menit)</label>
-                    <input type="number" class="form-input" name="duration" value="${packageData.duration || 60}" min="1" required>
+                    <input type="number" class="form-input" name="duration" value="${packageData.duration || 60}" min="1" required 
+                           oninvalid="this.setCustomValidity('tentukan durasi!')" 
+                           oninput="this.setCustomValidity('')">
                 </div>
             </div>
             

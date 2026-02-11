@@ -36,7 +36,13 @@ Route::get('/api/package/{id}', function ($id) {
 
 // API untuk mendapatkan tanggal yang sudah di-booking dengan jumlah booking per tanggal
 Route::get('/api/booked-dates', function () {
-    $bookings = \App\Booking::whereIn('status', ['pending', 'confirmed', 'on_progress'])
+    $bookings = \App\Booking::where(function($query) {
+            $query->whereIn('status', ['confirmed', 'on_progress'])
+                  ->orWhere(function($q) {
+                      $q->where('status', 'pending')
+                        ->where('created_at', '>=', now()->subMinutes(15));
+                  });
+        })
         ->where('booking_date', '>=', now()->format('Y-m-d'))
         ->select('booking_date')
         ->get()
@@ -54,7 +60,13 @@ Route::get('/api/booked-dates', function () {
 
 // API untuk mendapatkan waktu booking pada tanggal tertentu
 Route::get('/api/booked-times/{date}', function ($date) {
-    $bookings = \App\Booking::whereIn('status', ['pending', 'confirmed', 'on_progress'])
+    $bookings = \App\Booking::where(function($query) {
+            $query->whereIn('status', ['confirmed', 'on_progress'])
+                  ->orWhere(function($q) {
+                      $q->where('status', 'pending')
+                        ->where('created_at', '>=', now()->subMinutes(15));
+                  });
+        })
         ->where('booking_date', $date)
         ->select('booking_time')
         ->get()
@@ -165,9 +177,17 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/forgot-password', function () {
+    return view('auth.forgot-password');
+})->name('password.request');
+
+// Email Verification
+Route::get('/email/verify', [App\Http\Controllers\Auth\VerificationController::class, 'show'])->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
+Route::post('/email/resend', [App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
 
 // Dashboard
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('auth');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware(['auth', 'verified']);
 
 // Booking
 Route::middleware('auth')->group(function () {
@@ -185,6 +205,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/{id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::get('/payment/{id}/print', [PaymentController::class, 'print'])->name('payment.print');
     Route::post('/payment/{id}/verify', [PaymentController::class, 'verify'])->name('payment.verify');
+    Route::post('/payment/{id}/upload-proof', [PaymentController::class, 'uploadProof'])->name('payment.uploadProof');
+    Route::get('/payment/{id}/download', [PaymentController::class, 'download'])->name('payment.download');
 });
 
 // Profile
@@ -197,6 +219,7 @@ Route::middleware('auth')->group(function () {
 // Admin
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('users.delete');
     Route::get('/bookings', [AdminController::class, 'bookings'])->name('bookings');
     Route::get('/payments', [AdminController::class, 'payments'])->name('payments');
 

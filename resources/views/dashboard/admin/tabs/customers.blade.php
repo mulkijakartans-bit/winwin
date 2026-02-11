@@ -14,6 +14,7 @@
                     <th>Email</th>
                     <th>Telepon</th>
                     <th>Tanggal Daftar</th>
+                    <th class="text-end">Aksi</th>
                 </tr>
             </thead>
             <tbody id="customersTableBody">
@@ -23,10 +24,17 @@
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->phone ?? '-' }}</td>
                         <td>{{ $user->created_at->format('d M Y') }}</td>
+                        <td class="text-end">
+                            <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus customer ini? Semua data booking terkait juga akan dihapus.')" style="display: inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-action" style="background: #ef4444; color: white; border-color: #ef4444;">Hapus</button>
+                            </form>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="empty-state">Tidak ada customer.</td>
+                        <td colspan="5" class="empty-state">Tidak ada customer.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -37,7 +45,7 @@
 <script>
 function searchCustomers(query) {
     const tbody = document.getElementById('customersTableBody');
-    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Memuat...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Memuat...</td></tr>';
     
     fetch(`/admin/users?search=${encodeURIComponent(query)}`)
         .then(response => response.text())
@@ -48,12 +56,12 @@ function searchCustomers(query) {
             if (newTbody) {
                 tbody.innerHTML = newTbody.innerHTML;
             } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Tidak ada customer.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Tidak ada customer.</td></tr>';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Terjadi kesalahan.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Terjadi kesalahan.</td></tr>';
         });
 }
 </script>

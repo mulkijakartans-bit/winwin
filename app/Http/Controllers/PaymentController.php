@@ -52,7 +52,7 @@ class PaymentController extends Controller
                 'external_id' => $externalId,
                 'amount' => $booking->total_price,
                 'description' => 'Payment for Booking #' . $booking->booking_code . ' via WINWIN Makeup',
-                'invoice_duration' => 3600, // 1 hour
+                'invoice_duration' => 900, // 15 minutes
                 'payer_email' => Auth::user()->email,
                 'customer' => [
                     'given_names' => Auth::user()->name,
@@ -177,5 +177,79 @@ class PaymentController extends Controller
         }
         
         return back()->with('success', 'Status updated.');
+    }
+
+    /**
+     * Upload proof of payment
+     */
+    public function uploadProof(Request $request, $id)
+    {
+        $payment = Payment::with('booking')->findOrFail($id);
+
+        // Check authorization
+        if (Auth::user()->isCustomer() && $payment->booking->customer_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        try {
+            if ($request->hasFile('payment_proof')) {
+                // Delete old proof if exists
+                if ($payment->payment_proof && \Illuminate\Support\Facades\Storage::disk('public')->exists($payment->payment_proof)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($payment->payment_proof);
+                }
+
+                $file = $request->file('payment_proof');
+                $filename = 'proof_' . time() . '_' . $payment->id . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('payment_proofs', $filename, 'public');
+
+                $payment->update([
+                    'payment_proof' => $path
+                ]);
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Bukti pembayaran berhasil diunggah.',
+                        'proof_url' => asset('storage/' . $path)
+                    ]);
+                }
+
+                return back()->with('success', 'Bukti pembayaran berhasil diunggah.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Upload Proof Error: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal mengunggah bukti pembayaran.'], 500);
+            }
+            return back()->with('error', 'Gagal mengunggah bukti pembayaran.');
+        }
+    }
+
+    /**
+     * Download proof of payment
+     */
+    public function download($id)
+    {
+        $payment = Payment::with('booking')->findOrFail($id);
+
+        // Check authorization (Admin can always download, Customer only their own)
+        if (!Auth::user()->isAdmin() && $payment->booking->customer_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($payment->payment_proof && \Illuminate\Support\Facades\Storage::disk('public')->exists($payment->payment_proof)) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->download($payment->payment_proof);
+        }
+
+        // Enhancement for Xendit or cases where there is no manual proof but it is paid
+        if ($payment->status === 'paid' || $payment->status === 'verified') {
+            return redirect()->route('payment.print', $payment->id);
+        }
+
+        return back()->with('error', 'Bukti pembayaran tidak ditemukan.');
     }
 }

@@ -1070,7 +1070,7 @@
 <section class="hero-section">
     <div class="hero-background" id="heroBackground"></div>
         <div class="hero-content">
-                        <div class="hero-subtitle">WINWIN Makeup</div>
+                        <div class="hero-subtitle">WINWIN Makeup • Area Tegal Dan Sekitarnya</div>
         <h1 class="hero-title">
             <strong>Follow Your</strong><br>
             Wedding Dream
@@ -1111,6 +1111,10 @@
             <div class="about-item">
                 <div class="about-number">{{ $muaProfile->experience_years }}+</div>
                 <div class="about-label">Tahun Pengalaman</div>
+                <div style="margin-top: 20px; text-align: center; color: #666; font-size: 0.95rem; line-height: 1.6;">
+                    • 2 Tahun berturut-turut MUA Paduan Suara Upacara Kemerdekaan di Istana Presiden RI<br>
+                    • 3 Tahun berturut-turut Eksibitor di Wedding Expo Rita Mall Tegal
+                </div>
             </div>
             @endif
             

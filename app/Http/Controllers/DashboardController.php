@@ -66,6 +66,16 @@ class DashboardController extends Controller
      */
     private function adminDashboard()
     {
+        // Date Filter Validation
+        if (request('start_date') || request('end_date')) {
+            $today = now()->format('Y-m-d');
+            $start = request('start_date');
+            $end = request('end_date');
+
+            if (($start && $end && $start > $end) || ($start && $start > $today) || ($end && $end > $today)) {
+                return redirect()->route('dashboard', ['tab' => 'reports'])->with('error', 'filter tanggal tidak valid!');
+            }
+        }
         $totalUsers = \App\User::count();
         $totalCustomers = \App\User::where('role', 'customer')->count();
         $totalBookings = \App\Booking::count();

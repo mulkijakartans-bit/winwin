@@ -39,20 +39,26 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="price" class="form-label">Harga</label>
-                                <input type="number" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" min="0" required>
+                                <input type="number" class="form-control @error('price') is-invalid @enderror" id="price" name="price" value="{{ old('price') }}" min="0" required 
+                                       oninvalid="this.setCustomValidity('tentukan harga!')" 
+                                       oninput="this.setCustomValidity('')">
                                 @error('price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+ industrial
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="duration" class="form-label">Durasi (menit)</label>
-                                <input type="number" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration') }}" min="1" required>
+                                <input type="number" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration') }}" min="1" required 
+                                       oninvalid="this.setCustomValidity('tentukan durasi!')" 
+                                       oninput="this.setCustomValidity('')">
                                 @error('duration')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+ industrial
                         </div>
                     </div>
 
@@ -129,13 +135,17 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Harga</label>
-                                                <input type="number" class="form-control" name="price" value="{{ $package->price }}" min="0" required>
+                                                <input type="number" class="form-control" name="price" value="{{ $package->price }}" min="0" required 
+                                                       oninvalid="this.setCustomValidity('tentukan harga!')" 
+                                                       oninput="this.setCustomValidity('')">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Durasi (menit)</label>
-                                                <input type="number" class="form-control" name="duration" value="{{ $package->duration }}" min="1" required>
+                                                <input type="number" class="form-control" name="duration" value="{{ $package->duration }}" min="1" required 
+                                                       oninvalid="this.setCustomValidity('tentukan durasi!')" 
+                                                       oninput="this.setCustomValidity('')">
                                             </div>
                                         </div>
                                     </div>

@@ -65,7 +65,9 @@
 
             <div class="form-group">
                 <label for="price" class="form-label">Harga</label>
-                <input type="number" class="form-input" id="price" name="default_price" min="0" required>
+                <input type="number" class="form-input" id="price" name="default_price" min="0" required 
+                       oninvalid="this.setCustomValidity('tentukan harga!')" 
+                       oninput="this.setCustomValidity('')">
             </div>
 
             <div style="margin-bottom: 20px;">
@@ -160,7 +162,9 @@ function openEditAddOnModal(addOnId, buttonElement) {
 
             <div class="form-group">
                 <label class="form-label">Harga</label>
-                <input type="number" class="form-input" name="default_price" value="${addOnData.price}" min="0" required>
+                <input type="number" class="form-input" name="default_price" value="${addOnData.price}" min="0" required 
+                       oninvalid="this.setCustomValidity('tentukan harga!')" 
+                       oninput="this.setCustomValidity('')">
             </div>
 
             <div style="margin-bottom: 20px;">

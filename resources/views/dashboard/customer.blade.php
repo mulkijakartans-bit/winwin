@@ -832,32 +832,32 @@
     .calendar-day.other-month {
         color: #ddd;
     }
+ 
+    .calendar-day.available {
+        background: #e0f2fe;
+        color: #0369a1;
+        border-color: #0369a1;
+    }
 
     .calendar-day.booked-1 {
-        background: #fff4e6;
-        color: #f97316;
-        border-color: #f97316;
+        background: #fef9c3;
+        color: #854d0e;
+        border-color: #eab308;
     }
 
     .calendar-day.booked-2 {
-        background: #fee;
-        color: #ef4444;
-        border-color: #ef4444;
+        background: #ffedd5;
+        color: #9a3412;
+        border-color: #f97316;
     }
 
     .calendar-day.booked-3 {
-        background: #fee;
-        color: #ef4444;
+        background: #ef4444;
+        color: #ffffff;
         cursor: not-allowed;
         position: relative;
     }
 
-    .calendar-day.booked-3::after {
-        content: '×';
-        position: absolute;
-        font-size: 1.2rem;
-        font-weight: bold;
-    }
 
     .calendar-day.selected {
         background: #1a1a1a;
@@ -908,23 +908,23 @@
     }
 
     .legend-color.booked-1 {
-        background: #fff4e6;
-        border-color: #f97316;
+        background: #fef9c3;
+        border-color: #eab308;
     }
 
     .legend-color.booked-2 {
-        background: #fee;
-        border-color: #ef4444;
+        background: #ffedd5;
+        border-color: #f97316;
     }
 
     .legend-color.booked-3 {
-        background: #fee;
+        background: #ef4444;
         border-color: #ef4444;
     }
 
     .legend-color.available {
-        background: white;
-        border-color: #1a1a1a;
+        background: #e0f2fe;
+        border-color: #0369a1;
     }
 
     /* Packages Modal Styles */
@@ -998,6 +998,68 @@
     .package-modal-description {
         font-size: 0.95rem;
         color: #333;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    /* Package Selection Grid Styles */
+    .package-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 5px;
+    }
+
+    .package-selection-item {
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background: #fafafa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .package-selection-item:hover {
+        border-color: #1a1a1a;
+        background: white;
+    }
+
+    .package-selection-item.selected {
+        background: white;
+        border-color: #1a1a1a;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .package-selection-item.selected::after {
+        content: '✓';
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.1rem;
+        color: #1a1a1a;
+        font-weight: bold;
+    }
+
+    .package-selection-name {
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        padding-right: 25px;
+    }
+
+    .package-selection-price {
+        font-size: 1rem;
+        color: #1a1a1a;
+        font-weight: 400;
+    }
         line-height: 1.6;
         margin-bottom: 15px;
     }
@@ -1106,6 +1168,15 @@
 <div class="dashboard-page">
     <div class="dashboard-background"></div>
     <div class="container">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0; margin-bottom: 40px; border: none; background: #ffffff; color: #10b981; font-size: 1.25rem; font-weight: 600; text-align: center; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border-top: 5px solid #10b981;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-check-circle-fill me-3" style="font-size: 1.5rem;"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="top: 50%; transform: translateY(-50%); right: 20px;"></button>
+            </div>
+        @endif
         <div class="dashboard-header">
             <h1 class="dashboard-title">Dashboard</h1>
             <p class="dashboard-subtitle">Selamat datang, {{ $user->name }}</p>
@@ -1163,6 +1234,10 @@
                                 <div class="booking-detail" style="margin-top: 8px;">
                                     <strong>Kode</strong>
                                     {{ $booking->booking_code }}
+                                </div>
+                                <div class="booking-detail" style="margin-top: 8px;">
+                                    <strong>Dibuat Pada</strong>
+                                    {{ $booking->created_at->format('d M Y, H:i') }}
                                 </div>
                             </div>
                             <div class="booking-meta">
@@ -1308,17 +1383,24 @@
         </div>
         <form method="POST" action="{{ route('booking.store') }}" id="bookingForm">
             @csrf
-            <input type="hidden" name="package_id" id="booking_package_id" value="{{ $packages->first()->id }}">
-
             <div class="form-group">
                 <label class="form-label">Pilih Paket</label>
-                <select class="form-input" id="package_select" onchange="updatePackage()" required>
+                <div class="package-selection-grid" id="package_grid">
                     @foreach($packages as $package)
-                        <option value="{{ $package->id }}" data-price="{{ $package->price }}" data-name="{{ $package->name }}" data-duration="{{ $package->duration }}">
-                            {{ $package->name }} - Rp {{ number_format($package->price, 0, ',', '.') }}
-                        </option>
+                        <div class="package-selection-item {{ $loop->first ? 'selected' : '' }}" 
+                             data-package-id="{{ $package->id }}" 
+                             data-price="{{ $package->price }}" 
+                             data-name="{{ $package->name }}" 
+                             data-duration="{{ $package->duration }}"
+                             onclick="selectPackage('{{ $package->id }}')">
+                            <div>
+                                <div class="package-selection-name">{{ $package->name }}</div>
+                                <div class="package-selection-price">Rp {{ number_format($package->price, 0, ',', '.') }}</div>
+                            </div>
+                        </div>
                     @endforeach
-                </select>
+                </div>
+                <input type="hidden" name="package_id" id="booking_package_id" value="{{ $packages->first()->id }}">
             </div>
 
             <div class="form-group" id="addons-section" style="display: none;">
@@ -1351,7 +1433,8 @@
                     <span class="form-error">{{ $message }}</span>
                 @enderror
                 <small class="form-text" style="color: #666; font-size: 0.85rem; margin-top: 5px;">
-                    Setiap booking membutuhkan waktu 5 jam
+                    Setiap pemesanan berlaku untuk 5 jam.<br>
+                    Last order di pukul 17.00 WIB dikarenakan kami close pukul 22.00 WIB.
                 </small>
             </div>
 
@@ -1383,8 +1466,9 @@
             </div>
 
             <div class="form-group">
-                <label for="notes" class="form-label">Catatan Khusus</label>
-                <textarea class="form-input @error('notes') is-invalid @enderror" id="notes" name="notes" rows="3" placeholder="Catatan tambahan (opsional)">{{ old('notes') }}</textarea>
+                <label for="notes" class="form-label">Detail Alamat</label>
+                <textarea class="form-input @error('notes') is-invalid @enderror" id="notes" name="notes" rows="8" placeholder="Contoh: Nama Jalan, Gang, No Rumah, RT/RW, Kelurahan, Kecamatan, Patokan">{{ old('notes') ?? "Nama Jalan  :\nNama Gang :\nNomor Rumah :\nRT/RW :\nKelurahan :\nKecamatan :\nPatokan (Opsional) :" }}</textarea>
+                <small style="color: #666; font-size: 0.8rem; display: block; margin-top: 5px;">Silakan isi dengan detail alamat lokasi acara secara lengkap.</small>
                 @error('notes')
                     <span class="form-error">{{ $message }}</span>
                 @enderror
@@ -1621,6 +1705,7 @@
 
             let classes = 'calendar-day';
             if (isPast) classes += ' disabled';
+            if (bookingCount === 0 && !isPast) classes += ' available';
             if (bookingCount === 1) classes += ' booked-1';
             if (bookingCount === 2) classes += ' booked-2';
             if (bookingCount >= 3) classes += ' booked-3';
@@ -1704,48 +1789,51 @@
             const data = await response.json();
             const bookedTimes = data.booked_times || [];
 
-            // Generate all possible time slots (every hour from 06:00 to 20:00)
+            // Generate all possible time slots (every hour from 05:00 to 21:00)
             const allTimeSlots = [];
-            for (let hour = 6; hour <= 20; hour++) {
+            for (let hour = 5; hour <= 17; hour++) {
                 const timeStr = String(hour).padStart(2, '0') + ':00';
                 allTimeSlots.push(timeStr);
             }
 
-            // Filter out times that overlap with existing bookings
-            // Each booking takes 5 hours (300 minutes)
-            const availableTimes = allTimeSlots.filter(slotTime => {
-                const slotHour = parseInt(slotTime.split(':')[0]);
-                const slotEndHour = slotHour + 5; // 5 hours duration
+            // Populate select with all times, marking booked ones as disabled
+            timeSelect.innerHTML = '<option value="">Pilih Waktu</option>';
+            
+            allTimeSlots.forEach(time => {
+                const hour = parseInt(time.split(':')[0]);
+                const endTimeStr = String(hour + 5).padStart(2, '0') + ':00';
+                
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = `${time} WIB - Selesai ${endTimeStr} WIB`;
+                
+                // Check if this slot overlaps with any existing booking (6h total block)
+                const slotHour = hour;
+                const slotEndHour = slotHour + 6;
+                let isBooked = false;
 
-                // Check if this slot overlaps with any existing booking
                 for (const bookedTime of bookedTimes) {
                     const bookedHour = parseInt(bookedTime.split(':')[0]);
-                    const bookedEndHour = bookedHour + 5; // 5 hours duration
-
-                    // Check for overlap
-                    // Slot overlaps if: slot starts before booked ends AND slot ends after booked starts
+                    const bookedEndHour = bookedHour + 6;
                     if (slotHour < bookedEndHour && slotEndHour > bookedHour) {
-                        return false; // This slot is not available
+                        isBooked = true;
+                        break;
                     }
                 }
-                return true; // This slot is available
-            });
 
-            // Populate select with available times
-            timeSelect.innerHTML = '<option value="">Pilih Waktu</option>';
-            if (availableTimes.length === 0) {
-                timeSelect.innerHTML = '<option value="">Tidak ada waktu tersedia</option>';
-            } else {
-                availableTimes.forEach(time => {
-                    const option = document.createElement('option');
-                    option.value = time;
-                    option.textContent = time;
-                    if (time === '{{ old("booking_time") }}') {
-                        option.selected = true;
-                    }
-                    timeSelect.appendChild(option);
-                });
-            }
+                if (isBooked) {
+                    option.textContent = `${time} WIB - Selesai ${endTimeStr} WIB (Sudah di-booking)`;
+                    option.disabled = true;
+                    option.style.color = '#ef4444'; // Red color
+                } else {
+                    option.textContent = `${time} WIB - Selesai ${endTimeStr} WIB`;
+                }
+
+                if (time === '{{ old("booking_time") }}') {
+                    option.selected = true;
+                }
+                timeSelect.appendChild(option);
+            });
             timeSelect.disabled = false;
         } catch (error) {
             console.error('Error loading available times:', error);
@@ -1800,10 +1888,7 @@
             timeSelect.disabled = true;
         }
         
-        // Trigger package update
-        updatePackage();
-        
-        // Load add-ons for initial package
+        // Initial data update for the default selected package
         updatePackage();
         
         // Langsung buka calendar saat modal dibuka
@@ -1853,13 +1938,25 @@
         }
     });
 
-    async function updatePackage() {
-        const select = document.getElementById('package_select');
-        const selectedOption = select.options[select.selectedIndex];
-        const packageId = selectedOption.value;
-        const price = selectedOption.getAttribute('data-price');
+    function selectPackage(packageId) {
+        // Update selected class in UI
+        document.querySelectorAll('.package-selection-item').forEach(item => {
+            item.classList.remove('selected');
+            if (item.getAttribute('data-package-id') == packageId) {
+                item.classList.add('selected');
+            }
+        });
         
+        // Update hidden input
         document.getElementById('booking_package_id').value = packageId;
+        
+        // Update data and price
+        updatePackage();
+    }
+
+    async function updatePackage() {
+        const packageId = document.getElementById('booking_package_id').value;
+        if (!packageId) return;
         
         // Load add-ons for this package
         try {
@@ -1905,16 +2002,15 @@
     }
     
     function calculateTotalPrice() {
-        const select = document.getElementById('package_select');
-        const selectedOption = select.options[select.selectedIndex];
-        const basePrice = parseFloat(selectedOption.getAttribute('data-price') || 0);
+        const packageId = document.getElementById('booking_package_id').value;
+        const selectedItem = document.querySelector(`.package-selection-item[data-package-id="${packageId}"]`);
+        const basePrice = selectedItem ? parseFloat(selectedItem.getAttribute('data-price') || 0) : 0;
         
-        // Custom Addon
         // Custom Addon
         const customAddonSelect = document.getElementById('custom_addon_id');
         const selectedCustomAddon = customAddonSelect ? customAddonSelect.options[customAddonSelect.selectedIndex] : null;
         const customAddonPrice = selectedCustomAddon ? (parseFloat(selectedCustomAddon.getAttribute('data-price')) || 0) : 0;
-
+ 
         let addonsTotal = 0;
         const selectedAddOns = [];
         document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
@@ -2054,7 +2150,11 @@
                     ${booking.payment.payment_method ? `
                     <div style="margin-top: 15px;">
                         <div class="profile-label">Metode Pembayaran</div>
-                        <div class="profile-value">${booking.payment.payment_method.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</div>
+                        <div class="profile-value">
+                            ${booking.payment.payment_method.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            ${booking.payment.status === 'pending' && booking.payment.payment_method === 'xendit_invoice' ? 
+                                `<br><small style="color: #ef4444; font-weight: 500;">Selesaikan pembayaran dalam 15 menit agar booking tidak hangus.</small>` : ''}
+                        </div>
                     </div>
                     ` : ''}
                     ${booking.payment.payment_proof ? `
@@ -2080,9 +2180,32 @@
                 </div>
                 ` : `
                 <div style="border-top: 1px solid #e0e0e0; padding-top: 20px;">
-                    <button type="button" class="btn-modal btn-modal-primary" onclick="openPaymentModal(${booking.id}, ${booking.total_price})">Bayar Sekarang</button>
+                    ${(booking.status === 'rejected' || booking.status === 'cancelled') ? 
+                        `<button type="button" class="btn-modal btn-modal-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Bayar Sekarang</button>
+                         <div style="color: #ef4444; margin-top: 10px; font-size: 0.85rem;">Booking ini telah dibatalkan/ditolak.</div>` 
+                        : 
+                        `<button type="button" class="btn-modal btn-modal-primary" onclick="openPaymentModal(${booking.id}, ${booking.total_price})">Bayar Sekarang</button>`
+                    }
                 </div>
                 `}
+
+                ${(booking.payment && (booking.payment.status === 'pending' || booking.payment.status === 'paid' || booking.payment.status === 'verified')) ? `
+                <div style="border-top: 1px solid #e0e0e0; margin-top: 20px; padding-top: 20px;">
+                    <div style="padding: 20px; background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 8px;">
+                        <div class="profile-label" style="color: #004085; font-weight: 600;">Upload Bukti Pembayaran</div>
+                        <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px;">Silakan unggah tangkapan layar atau foto bukti transfer Anda di sini.</p>
+                        
+                        <div id="upload-status-msg" style="display:none; margin-bottom:10px; padding:10px; border-radius:4px; font-size:0.9rem;"></div>
+
+                        <form id="uploadProofForm" onsubmit="uploadPaymentProof(event, ${booking.payment.id})">
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <input type="file" name="payment_proof" id="payment_proof_file" accept="image/*" required style="font-size: 0.9rem; flex: 1; min-width: 200px;">
+                                <button type="submit" class="btn-modal btn-modal-primary" id="btn-upload-proof" style="padding: 8px 15px; font-size: 0.85rem; width: auto; margin-left: auto;">Unggah Bukti</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                ` : ''}
             </div>
         `;
 
@@ -2236,6 +2359,75 @@
         if (modal) {
             modal.remove();
             document.body.style.overflow = 'auto';
+        }
+    }
+
+    async function uploadPaymentProof(event, paymentId) {
+        event.preventDefault();
+        const form = event.target;
+        const btn = document.getElementById('btn-upload-proof');
+        const msg = document.getElementById('upload-status-msg');
+        
+        btn.disabled = true;
+        btn.textContent = 'Mengunggah...';
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch(`/payment/${paymentId}/upload-proof`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                msg.style.display = 'block';
+                msg.style.background = '#d4edda';
+                msg.style.color = '#155724';
+                msg.style.border = '1px solid #c3e6cb';
+                msg.textContent = data.message;
+                
+                // Reload booking detail to show the new proof
+                setTimeout(() => {
+                    const bookingId = document.getElementById('payment_booking_id').value;
+                    // We need a fresh way to get booking data since @json($bookings) is static
+                    // Let's use the API we found earlier
+                    refreshBookingDetail(bookingId);
+                }, 1500);
+            } else {
+                msg.style.display = 'block';
+                msg.style.background = '#f8d7da';
+                msg.style.color = '#721c24';
+                msg.style.border = '1px solid #f5c6cb';
+                msg.textContent = data.message || 'Gagal mengunggah bukti.';
+                btn.disabled = false;
+                btn.textContent = 'Unggah Bukti';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan sistem saat mengunggah.');
+            btn.disabled = false;
+            btn.textContent = 'Unggah Bukti';
+        }
+    }
+
+    async function refreshBookingDetail(bookingId) {
+        try {
+            const response = await fetch(`/api/booking/${bookingId}`);
+            const data = await response.json();
+            if (data.booking) {
+                renderBookingDetail(data.booking);
+            }
+        } catch (error) {
+            console.error('Error refreshing booking:', error);
+            // Fallback to page reload if API fails
+            window.location.reload();
         }
     }
 

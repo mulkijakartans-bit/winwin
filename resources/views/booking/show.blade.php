@@ -71,6 +71,18 @@
                         </span>
                     </p>
                     <a href="{{ route('payment.show', $booking->payment->id) }}" class="btn btn-sm btn-primary">Lihat Detail</a>
+                    @if($booking->payment->payment_proof || in_array($booking->payment->status, ['paid', 'verified']))
+                        <hr>
+                        @if($booking->payment->payment_proof)
+                            <p class="mb-2"><strong>Bukti Pembayaran:</strong></p>
+                            <img src="{{ asset('storage/' . $booking->payment->payment_proof) }}" class="img-fluid mb-2 border rounded" alt="Bukti Pembayaran">
+                        @else
+                            <p class="mb-2 text-success"><i class="fas fa-check-circle"></i> Pembayaran Terverifikasi</p>
+                        @endif
+                        <a href="{{ route('payment.download', $booking->payment->id) }}" class="btn btn-sm btn-outline-success w-100">
+                            <i class="fas fa-download"></i> {{ $booking->payment->payment_proof ? 'Unduh Bukti' : 'Cetak Invoice' }}
+                        </a>
+                    @endif
                 </div>
             </div>
         @elseif(Auth::user()->isCustomer() && $booking->customer_id == Auth::id())

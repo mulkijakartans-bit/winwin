@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar - WINWIN Makeup')
+@section('title', 'Registrasi - WINWIN Makeup')
 
 @push('styles')
 <style>
@@ -110,6 +110,26 @@
         font-weight: 300;
     }
 
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        padding: 5px;
+        color: #666;
+        transition: color 0.3s ease;
+        z-index: 2;
+    }
+
+    .password-toggle:hover {
+        color: #1a1a1a;
+    }
+
     .btn-submit {
         width: 100%;
         padding: 16px;
@@ -182,7 +202,7 @@
     <div class="auth-background"></div>
     <div class="auth-container">
         <div class="auth-header">
-            <h1>Daftar</h1>
+            <h1>Registrasi</h1>
             <p>Buat akun baru untuk mulai booking</p>
         </div>
         <div class="auth-form">
@@ -198,6 +218,8 @@
                            value="{{ old('name') }}" 
                            placeholder="Masukkan nama lengkap"
                            required 
+                           oninvalid="this.setCustomValidity('harap isi bidang ini')"
+                           oninput="this.setCustomValidity('')"
                            autofocus>
                     @error('name')
                         <span class="text-danger">{{ $message }}</span>
@@ -212,7 +234,9 @@
                            name="email" 
                            value="{{ old('email') }}" 
                            placeholder="Masukkan email Anda"
-                           required>
+                           required
+                           oninvalid="this.setCustomValidity('harap isi bidang ini')"
+                           oninput="this.setCustomValidity('')">
                     @error('email')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -233,12 +257,17 @@
 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" 
-                           class="form-control @error('password') is-invalid @enderror" 
-                           id="password" 
-                           name="password" 
-                           placeholder="Minimal 8 karakter"
-                           required>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               class="form-control @error('password') is-invalid @enderror" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Minimal 8 karakter"
+                               required
+                               oninvalid="this.setCustomValidity('harap isi bidang ini')"
+                               oninput="this.setCustomValidity('')">
+                        <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+                    </div>
                     @error('password')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -246,12 +275,15 @@
 
                 <div class="form-group">
                     <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                    <input type="password" 
-                           class="form-control" 
-                           id="password_confirmation" 
-                           name="password_confirmation" 
-                           placeholder="Ulangi password"
-                           required>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               class="form-control" 
+                               id="password_confirmation" 
+                               name="password_confirmation" 
+                               placeholder="Ulangi password"
+                               required>
+                        <i class="bi bi-eye password-toggle" id="togglePasswordConfirm"></i>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-submit">
@@ -266,3 +298,26 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const setupToggle = (toggleId, inputId) => {
+            const toggle = document.querySelector(toggleId);
+            const input = document.querySelector(inputId);
+            
+            if (toggle && input) {
+                toggle.addEventListener('click', function() {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    this.classList.toggle('bi-eye');
+                    this.classList.toggle('bi-eye-slash');
+                });
+            }
+        };
+
+        setupToggle('#togglePassword', '#password');
+        setupToggle('#togglePasswordConfirm', '#password_confirmation');
+    });
+</script>
+@endpush

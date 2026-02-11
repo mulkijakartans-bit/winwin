@@ -49,7 +49,13 @@ class BookingController extends Controller
         ]);
 
         // Check if date already has 3 bookings
-        $bookingCount = Booking::whereIn('status', ['pending', 'confirmed', 'on_progress'])
+        $bookingCount = Booking::where(function($query) {
+                $query->whereIn('status', ['confirmed', 'on_progress'])
+                      ->orWhere(function($q) {
+                          $q->where('status', 'pending')
+                            ->where('created_at', '>=', now()->subMinutes(15));
+                      });
+            })
             ->where('booking_date', $validated['booking_date'])
             ->count();
 
@@ -62,21 +68,35 @@ class BookingController extends Controller
         // Check if the selected time overlaps with existing bookings (5 hours duration)
         $selectedTime = \Carbon\Carbon::parse($validated['booking_time']);
         $selectedHour = (int)$selectedTime->format('H');
-        $selectedEndHour = $selectedHour + 5; // 5 hours duration
 
-        $existingBookings = Booking::whereIn('status', ['pending', 'confirmed', 'on_progress'])
+        // Ensure booking finishes by 22:00 (closing time)
+        if ($selectedHour > 17) {
+            return back()->withErrors([
+                'booking_time' => 'Booking tidak tersedia setelah pukul 17:00 karena kami tutup pukul 22:00.'
+            ])->withInput();
+        }
+
+        $selectedEndHour = $selectedHour + 6; // 6 hours total block (5h work + 1h buffer)
+
+        $existingBookings = Booking::where(function($query) {
+                $query->whereIn('status', ['confirmed', 'on_progress'])
+                      ->orWhere(function($q) {
+                          $q->where('status', 'pending')
+                            ->where('created_at', '>=', now()->subMinutes(15));
+                      });
+            })
             ->where('booking_date', $validated['booking_date'])
             ->get();
 
         foreach ($existingBookings as $existingBooking) {
             $existingTime = \Carbon\Carbon::parse($existingBooking->booking_time);
             $existingHour = (int)$existingTime->format('H');
-            $existingEndHour = $existingHour + 5; // 5 hours duration
+            $existingEndHour = $existingHour + 6; // 6 hours total block (5h work + 1h buffer)
 
             // Check for overlap: new booking starts before existing ends AND new booking ends after existing starts
             if ($selectedHour < $existingEndHour && $selectedEndHour > $existingHour) {
                 return back()->withErrors([
-                    'booking_time' => 'Waktu ini tidak tersedia karena overlap dengan booking yang sudah ada. Setiap booking membutuhkan waktu 5 jam.'
+                    'booking_time' => 'Waktu ini tidak tersedia karena overlap dengan booking yang sudah ada. Setiap pemesanan berlaku untuk 5 jam dan kami close pukul 22:00 WIB.'
                 ])->withInput();
             }
         }

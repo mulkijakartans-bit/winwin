@@ -116,8 +116,47 @@
         font-weight: 300;
     }
 
-    .form-check {
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        padding: 5px;
+        color: #666;
+        transition: color 0.3s ease;
+        z-index: 2;
+    }
+
+    .password-toggle:hover {
+        color: #1a1a1a;
+    }
+
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 30px;
+    }
+
+    .form-check {
+        margin-bottom: 0;
+    }
+
+    .forgot-password-link {
+        font-size: 0.9rem;
+        color: #1a1a1a;
+        text-decoration: none;
+        font-weight: 400;
+        transition: opacity 0.3s ease;
+    }
+
+    .forgot-password-link:hover {
+        opacity: 0.7;
     }
 
     .form-check-input {
@@ -210,8 +249,17 @@
 @section('content')
 <div class="auth-page">
     <div class="auth-background"></div>
-<div class="auth-container">
-                    <div class="auth-header">
+    <div class="auth-container">
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 0; margin-bottom: 40px; border: none; background: #ffffff; color: #10b981; font-size: 1.25rem; font-weight: 600; text-align: center; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border-top: 5px solid #10b981;">
+                <div class="d-flex align-items-center justify-content-center">
+                    <i class="bi bi-check-circle-fill me-3" style="font-size: 1.5rem;"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="top: 50%; transform: translateY(-50%); right: 20px;"></button>
+            </div>
+        @endif
+        <div class="auth-header">
             <h1>Login</h1>
             <p>Selamat datang kembali</p>
                     </div>
@@ -235,22 +283,28 @@
                             </div>
 
                 <div class="form-group">
-                                <label for="password" class="form-label">Password</label>
-                                    <input type="password" 
-                                           class="form-control @error('password') is-invalid @enderror" 
-                                           id="password" 
-                                           name="password" 
-                                           placeholder="Masukkan password Anda"
-                                           required>
-                                @error('password')
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               class="form-control @error('password') is-invalid @enderror" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Masukkan password Anda"
+                               required>
+                        <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+                    </div>
+                    @error('password')
                         <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
+                    @enderror
+                </div>
 
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                    <label class="form-check-label" for="remember">Ingat saya</label>
-                            </div>
+                <div class="form-options">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">Ingat saya</label>
+                    </div>
+                    <a href="{{ route('password.request') }}" class="forgot-password-link">Lupa Sandi?</a>
+                </div>
 
                 <button type="submit" class="btn btn-submit">
                     Login
@@ -264,3 +318,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            // toggle the eye slash icon
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+        });
+    });
+</script>
+@endpush

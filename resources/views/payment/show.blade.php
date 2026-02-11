@@ -21,7 +21,17 @@
                 </p>
                 @if($payment->payment_proof)
                     <p><strong>Bukti Pembayaran:</strong></p>
-                    <img src="{{ asset('storage/' . $payment->payment_proof) }}" class="img-fluid mb-3" alt="Bukti Pembayaran" style="max-height: 400px;">
+                    <img src="{{ asset('storage/' . $payment->payment_proof) }}" class="img-fluid mb-3 d-block border rounded" alt="Bukti Pembayaran" style="max-height: 400px;">
+                    <a href="{{ route('payment.download', $payment->id) }}" class="btn btn-outline-success mb-3">
+                        <i class="fas fa-download"></i> Unduh Bukti Pembayaran
+                    </a>
+                @elseif(in_array($payment->status, ['paid', 'verified']))
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle"></i> Pembayaran ini telah terverifikasi secara sistem.
+                    </div>
+                    <a href="{{ route('payment.download', $payment->id) }}" class="btn btn-outline-success mb-3">
+                        <i class="fas fa-print"></i> Cetak Invoice / Bukti Pembayaran
+                    </a>
                 @endif
                 @if($payment->notes)
                     <p><strong>Catatan:</strong> {{ $payment->notes }}</p>

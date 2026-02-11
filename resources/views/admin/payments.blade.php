@@ -66,6 +66,11 @@
                                     </td>
                                     <td>
                                         <a href="{{ route('payment.show', $payment->id) }}" class="btn btn-sm btn-primary">Detail</a>
+                                        @if($payment->payment_proof || in_array($payment->status, ['paid', 'verified']))
+                                            <a href="{{ route('payment.download', $payment->id) }}" class="btn btn-sm btn-success" title="{{ $payment->payment_proof ? 'Download Bukti' : 'Cetak Invoice' }}">
+                                                <i class="fas fa-{{ $payment->payment_proof ? 'download' : 'print' }}"></i>
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

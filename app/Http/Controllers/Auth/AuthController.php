@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\Events\Registered;
 
 class AuthController extends Controller
 {
@@ -32,13 +33,22 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Check if user exists
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'email tidak terdaftar',
+            ])->withInput($request->only('email'));
+        }
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'email' => 'Password salah.',
         ])->withInput($request->only('email'));
     }
 
@@ -60,13 +70,20 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email:rfc,dns|max:255|unique:users|regex:/@gmail\./',
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
+        ], [
+            'name.required' => 'harap isi bidang ini',
+            'email.required' => 'harap isi bidang ini',
+            'email.email' => 'email tidak sah!',
+            'email.regex' => 'email tidak sah!',
+            'password.required' => 'harap isi bidang ini',
+            'email.unique' => 'Email sudah terdaftar',
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()->withErrors($validator)->withInput($request->except('email', 'password', 'password_confirmation'));
         }
 
         $user = User::create([
@@ -77,9 +94,11 @@ class AuthController extends Controller
             'phone' => $request->phone,
         ]);
 
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')->with('success', 'Akun berhasil di buat!');
     }
 
     /**
